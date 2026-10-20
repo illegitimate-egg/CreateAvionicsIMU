@@ -8,6 +8,8 @@ import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.simulated_team.simulated.content.blocks.gimbal_sensor.GimbalSensorBlockEntity;
 import ink.astrius.create_avionics.api.simulated.GimbalSensorExt;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +24,8 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
     @Unique private final Vector3d createAvionics$angularVelocityBody = new Vector3d();
     @Unique private final Vector3d createAvionics$gravityBody = new Vector3d();
     @Unique private final Vector3d createAvionics$linearAccelerationBody = new Vector3d();
+    @Unique private final Vector3d createAvionics$linearVelocityBody = new Vector3d();
+    @Unique private final Vector3d createAvionics$directionVector = new Vector3d();
     @Unique private final Vector3d createAvionics$lastLinearVelocity = new Vector3d();
     @Unique private boolean createAvionics$hasLastLinearVelocity = false;
 
@@ -40,6 +44,14 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
         return this.createAvionics$linearAccelerationBody;
     }
 
+    @Override
+    public Vector3dc getLinearVelocityBody() {
+        return this.createAvionics$linearVelocityBody;
+    }
+
+    @Override
+    public Vector3dc getDirectionVector() { return this.createAvionics$directionVector; }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void createAvionics$updateBodyFrameVectors(final CallbackInfo ci) {
         final GimbalSensorBlockEntity self = (GimbalSensorBlockEntity) (Object) this;
@@ -55,7 +67,11 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
             this.createAvionics$gravityBody.set(DimensionPhysicsData.getGravity(self.getLevel(), worldPos));
             serverSubLevel.logicalPose().orientation().transformInverse(this.createAvionics$gravityBody);
 
+            final Vector3d ld = JOMLConversion.toJOML(Vec3.atLowerCornerOf(Direction.DOWN.getNormal()));
+            this.createAvionics$directionVector.set(subLevel.logicalPose().orientation().transformInverse(ld));
+
             final Vector3d currentLinearVelocity = body.getLinearVelocity(new Vector3d());
+            this.createAvionics$linearVelocityBody.set(currentLinearVelocity);
             if (this.createAvionics$hasLastLinearVelocity) {
                 currentLinearVelocity.sub(this.createAvionics$lastLinearVelocity, this.createAvionics$linearAccelerationBody).mul(20.0);
                 serverSubLevel.logicalPose().orientation().transformInverse(this.createAvionics$linearAccelerationBody);

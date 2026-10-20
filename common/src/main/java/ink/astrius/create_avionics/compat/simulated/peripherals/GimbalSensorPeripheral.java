@@ -1,8 +1,14 @@
 package ink.astrius.create_avionics.compat.simulated.peripherals;
 
 import dan200.computercraft.api.lua.LuaFunction;
+import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
+import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.simulated_team.simulated.content.blocks.gimbal_sensor.GimbalSensorBlockEntity;
 import ink.astrius.create_avionics.api.simulated.GimbalSensorExt;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import java.util.List;
@@ -59,6 +65,30 @@ public class GimbalSensorPeripheral extends dev.simulated_team.simulated.compat.
     @LuaFunction
     public List<Double> getAnglesRad() {
         return super.getAnglesRad();
+    }
+
+    /**
+     * Get the contraption's current direction vector relative
+     * to the orientation of the gimbal sensor.
+     *
+     * @return A three-element list {x, y, z} / vector.
+     */
+    @LuaFunction
+    public List<Double> getDirectionVector() {
+        final Vector3dc w = ((GimbalSensorExt) this.blockEntity).getDirectionVector();
+        return List.of(w.x(), w.y(), w.z());
+    }
+
+    /**
+     * Get the contraption's current direction of motion
+     * as a vector relative to the sensor
+     *
+     * @return A three-element list {x, y, z} / vector.
+     */
+    @LuaFunction
+    public List<Double> getLinearVelocity() {
+        final Vector3dc v = ((GimbalSensorExt) this.blockEntity).getLinearVelocityBody();
+        return List.of(v.x(), v.y(), v.z());
     }
 
     /**
