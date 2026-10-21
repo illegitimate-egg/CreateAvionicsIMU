@@ -4,6 +4,7 @@ import org.joml.Vector3dc;
 
 public interface GimbalSensorExt {
     Vector3dc getDirectionVector();
+    Vector3dc getForwardVector();
     Vector3dc getAngularVelocityBody();
     Vector3dc getGravityBody();
     Vector3dc getLinearAccelerationBody();

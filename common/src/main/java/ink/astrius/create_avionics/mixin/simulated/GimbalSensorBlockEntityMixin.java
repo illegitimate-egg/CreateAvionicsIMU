@@ -26,6 +26,7 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
     @Unique private final Vector3d createAvionics$linearAccelerationBody = new Vector3d();
     @Unique private final Vector3d createAvionics$linearVelocityBody = new Vector3d();
     @Unique private final Vector3d createAvionics$directionVector = new Vector3d();
+    @Unique private final Vector3d createAvionics$forwardVector = new Vector3d();
     @Unique private final Vector3d createAvionics$lastLinearVelocity = new Vector3d();
     @Unique private boolean createAvionics$hasLastLinearVelocity = false;
 
@@ -52,6 +53,9 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
     @Override
     public Vector3dc getDirectionVector() { return this.createAvionics$directionVector; }
 
+    @Override
+    public Vector3dc getForwardVector() { return this.createAvionics$forwardVector; }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void createAvionics$updateBodyFrameVectors(final CallbackInfo ci) {
         final GimbalSensorBlockEntity self = (GimbalSensorBlockEntity) (Object) this;
@@ -70,8 +74,12 @@ public abstract class GimbalSensorBlockEntityMixin implements GimbalSensorExt {
             final Vector3d ld = JOMLConversion.toJOML(Vec3.atLowerCornerOf(Direction.DOWN.getNormal()));
             this.createAvionics$directionVector.set(subLevel.logicalPose().orientation().transformInverse(ld));
 
+            final Vector3d forward = new Vector3d(0, 1, 0);
+            this.createAvionics$forwardVector.set(subLevel.logicalPose().orientation().transform(forward));
+
+            this.createAvionics$linearVelocityBody.set(body.getLinearVelocity(new Vector3d()));
+
             final Vector3d currentLinearVelocity = body.getLinearVelocity(new Vector3d());
-            this.createAvionics$linearVelocityBody.set(currentLinearVelocity);
             if (this.createAvionics$hasLastLinearVelocity) {
                 currentLinearVelocity.sub(this.createAvionics$lastLinearVelocity, this.createAvionics$linearAccelerationBody).mul(20.0);
                 serverSubLevel.logicalPose().orientation().transformInverse(this.createAvionics$linearAccelerationBody);

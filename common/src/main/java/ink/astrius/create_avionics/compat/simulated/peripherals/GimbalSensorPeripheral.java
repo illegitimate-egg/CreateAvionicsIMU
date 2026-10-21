@@ -3,6 +3,7 @@ package ink.astrius.create_avionics.compat.simulated.peripherals;
 import dan200.computercraft.api.lua.LuaFunction;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.math.JOMLConversion;
+import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.simulated_team.simulated.content.blocks.gimbal_sensor.GimbalSensorBlockEntity;
 import ink.astrius.create_avionics.api.simulated.GimbalSensorExt;
@@ -77,6 +78,27 @@ public class GimbalSensorPeripheral extends dev.simulated_team.simulated.compat.
     public List<Double> getDirectionVector() {
         final Vector3dc w = ((GimbalSensorExt) this.blockEntity).getDirectionVector();
         return List.of(w.x(), w.y(), w.z());
+    }
+    /**
+     * Pussyklat
+     *
+     * @return A three-element list {x, y, z} / vector.
+     */
+    @LuaFunction
+    public List<Double> getForwardVector() {
+        final Vector3dc w = ((GimbalSensorExt) this.blockEntity).getForwardVector();
+        return List.of(w.x(), w.y(), w.z());
+    }
+
+    @LuaFunction
+    public List<Double> worldToShip(double x, double y, double z) {
+        SubLevel subLevel = Sable.HELPER.getContaining(this.blockEntity);
+        if (subLevel instanceof final ServerSubLevel serverSubLevel) {
+            final Vector3dc w = Sable.HELPER.getContaining(this.blockEntity).logicalPose().orientation().transformInverse(new Vector3d(x, y, z));
+            return List.of(w.x(), w.y(), w.z());
+        } else {
+            return List.of(0.0, 0.0, 0.0);
+        }
     }
 
     /**
